@@ -185,6 +185,47 @@ write_default_progress() {
 EOF
 }
 
+write_default_design() {
+    cat > "$1" << 'EOF'
+# Design: [Brief Description]
+
+## Architecture Overview
+[High-level architecture description — pattern, layers, how pieces connect]
+
+## Component / Module Tree
+| Module | Responsibility | Depends On |
+|--------|---------------|------------|
+|        |               |            |
+
+## Data Flow
+1. [Entry point / trigger]
+2. [Step]
+3. [Output / result]
+
+## File / Directory Responsibilities
+```
+[project-root]/
+  [file-or-dir]     — [purpose]
+```
+
+## Interface / API Design
+```
+# [module].py
+[function signatures / class interfaces]
+```
+
+## Key Design Decisions
+| Decision | Rationale |
+|----------|-----------|
+|          |           |
+
+## Trade-offs Considered
+| Rejected Approach | Why Rejected |
+|-------------------|---------------|
+|                   |               |
+EOF
+}
+
 write_analytics_progress() {
     local date_value="$1"
     local target="$2"
@@ -213,6 +254,7 @@ EOF
 create_files_in() {
     local target_dir="$1"
     local plan_path="$target_dir/task_plan.md"
+    local design_path="$target_dir/design.md"
     local findings_path="$target_dir/findings.md"
     local progress_path="$target_dir/progress.md"
 
@@ -236,6 +278,13 @@ create_files_in() {
         echo "Created $findings_path"
     else
         echo "$findings_path already exists, skipping"
+    fi
+
+    if [ ! -f "$design_path" ]; then
+        write_default_design "$design_path"
+        echo "Created $design_path"
+    else
+        echo "$design_path already exists, skipping"
     fi
 
     if [ ! -f "$progress_path" ]; then
@@ -280,5 +329,5 @@ else
     create_files_in "$(pwd)"
     echo ""
     echo "Planning files initialized!"
-    echo "Files: task_plan.md, findings.md, progress.md"
+    echo "Files: task_plan.md, design.md, findings.md, progress.md"
 fi

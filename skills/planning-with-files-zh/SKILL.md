@@ -1,6 +1,6 @@
 ---
 name: planning-with-files-zh
-description: 基于 Manus 风格的文件规划系统，用于组织和跟踪复杂任务的进度。创建 task_plan.md、findings.md 和 progress.md 三个文件。当用户要求规划、拆解或组织多步骤项目、研究任务或需要超过5次工具调用的工作时使用。支持 /clear 后的自动会话恢复。触发词：任务规划、项目计划、制定计划、分解任务、多步骤规划、进度跟踪、文件规划、帮我规划、拆解项目
+description: 基于 Manus 风格的文件规划系统，用于组织和跟踪复杂任务的进度。创建 task_plan.md、design.md、findings.md 和 progress.md 四个文件。包含审批门机制，编码前需用户审核。当用户要求规划、拆解或组织多步骤项目、研究任务或需要超过5次工具调用的工作时使用。支持 /clear 后的自动会话恢复。触发词：任务规划、项目计划、制定计划、分解任务、多步骤规划、进度跟踪、文件规划、帮我规划、拆解项目
 user-invocable: true
 allowed-tools: "Read Write Edit Bash Glob Grep"
 hooks:
@@ -26,7 +26,7 @@ hooks:
     - matcher: "*"
       hooks:
         - type: command
-          command: "RESOLVED=\"\"; SCOPE=\"\"; SLUG_RE='^[A-Za-z0-9_][A-Za-z0-9._-]*$'; if [ -n \"${PLAN_ID:-}\" ] && printf \"%s\" \"$PLAN_ID\" | grep -Eq \"$SLUG_RE\" && [ -d \".planning/${PLAN_ID}\" ]; then RESOLVED=\".planning/${PLAN_ID}\"; SCOPE=\"scoped\"; elif [ -f .planning/.active_plan ]; then AP=$(tr -d '\\r\\n[:space:]' < .planning/.active_plan 2>/dev/null); if [ -n \"$AP\" ] && printf \"%s\" \"$AP\" | grep -Eq \"$SLUG_RE\" && [ -d \".planning/${AP}\" ]; then RESOLVED=\".planning/${AP}\"; SCOPE=\"scoped\"; fi; fi; if [ -z \"$RESOLVED\" ] && [ -d .planning ]; then NEWEST=\"\"; NEWEST_MT=0; for d in .planning/*/; do d=\"${d%/}\"; n=$(basename \"$d\"); case \"$n\" in .*) continue;; esac; printf \"%s\" \"$n\" | grep -Eq \"$SLUG_RE\" || continue; [ -f \"$d/task_plan.md\" ] || continue; m=$(stat -c '%Y' \"$d\" 2>/dev/null || stat -f '%m' \"$d\" 2>/dev/null || date -r \"$d\" +%s 2>/dev/null || echo 0); if [ \"$m\" -gt \"$NEWEST_MT\" ] 2>/dev/null; then NEWEST_MT=\"$m\"; NEWEST=\"$d\"; fi; done; [ -n \"$NEWEST\" ] && { RESOLVED=\"$NEWEST\"; SCOPE=\"scoped\"; }; fi; if [ -z \"$RESOLVED\" ] && [ -f task_plan.md ]; then RESOLVED=\".\"; SCOPE=\"root\"; fi; [ -z \"$RESOLVED\" ] && exit 0; if [ \"$SCOPE\" = \"root\" ]; then PLAN_FILE=\"task_plan.md\"; PROGRESS_FILE=\"progress.md\"; ATTEST=\"\"; [ -f .plan-attestation ] && ATTEST=$(tr -d '\\r\\n[:space:]' < .plan-attestation 2>/dev/null); else PLAN_FILE=\"${RESOLVED}/task_plan.md\"; PROGRESS_FILE=\"${RESOLVED}/progress.md\"; ATTEST=\"\"; [ -f \"${RESOLVED}/.attestation\" ] && ATTEST=$(tr -d '\\r\\n[:space:]' < \"${RESOLVED}/.attestation\" 2>/dev/null); fi; [ -f \"$PLAN_FILE\" ] || exit 0; TAMPERED=0; ACTUAL=\"\"; if [ -n \"$ATTEST\" ]; then CD=\"${TMPDIR:-/tmp}/pwf-sha\"; mkdir -p \"$CD\" 2>/dev/null; KEY=$(printf \"%s\" \"$PLAN_FILE\" | { sha256sum 2>/dev/null || shasum -a 256 2>/dev/null; } | awk '{print $1}' | cut -c1-16); MT=$(stat -c '%Y' \"$PLAN_FILE\" 2>/dev/null || stat -f '%m' \"$PLAN_FILE\" 2>/dev/null || date -r \"$PLAN_FILE\" +%s 2>/dev/null || echo 0); CF=\"$CD/$KEY\"; CM=\"\"; CS=\"\"; if [ -f \"$CF\" ]; then CM=$(sed -n 1p \"$CF\" 2>/dev/null); CS=$(sed -n 2p \"$CF\" 2>/dev/null); fi; if [ -n \"$MT\" ] && [ \"$MT\" = \"$CM\" ] && [ -n \"$CS\" ]; then ACTUAL=\"$CS\"; else ACTUAL=$( (sha256sum \"$PLAN_FILE\" 2>/dev/null || shasum -a 256 \"$PLAN_FILE\" 2>/dev/null) | awk '{print $1}'); [ -n \"$ACTUAL\" ] && [ -n \"$MT\" ] && printf \"%s\\n%s\\n\" \"$MT\" \"$ACTUAL\" > \"$CF\" 2>/dev/null; fi; [ \"$ACTUAL\" != \"$ATTEST\" ] && TAMPERED=1; fi; echo '[planning-with-files] PreCompact: context compaction is about to occur.'; echo 'Before compaction completes: ensure progress.md captures recent actions and task_plan.md status reflects current phase.'; echo 'task_plan.md, findings.md, progress.md remain on disk and will be re-read after compaction.'; [ -n \"$ATTEST\" ] && echo \"Plan-SHA256 at compaction: $ATTEST\"; exit 0"
+          command: "RESOLVED=\"\"; SCOPE=\"\"; SLUG_RE='^[A-Za-z0-9_][A-Za-z0-9._-]*$'; if [ -n \"${PLAN_ID:-}\" ] && printf \"%s\" \"$PLAN_ID\" | grep -Eq \"$SLUG_RE\" && [ -d \".planning/${PLAN_ID}\" ]; then RESOLVED=\".planning/${PLAN_ID}\"; SCOPE=\"scoped\"; elif [ -f .planning/.active_plan ]; then AP=$(tr -d '\\r\\n[:space:]' < .planning/.active_plan 2>/dev/null); if [ -n \"$AP\" ] && printf \"%s\" \"$AP\" | grep -Eq \"$SLUG_RE\" && [ -d \".planning/${AP}\" ]; then RESOLVED=\".planning/${AP}\"; SCOPE=\"scoped\"; fi; fi; if [ -z \"$RESOLVED\" ] && [ -d .planning ]; then NEWEST=\"\"; NEWEST_MT=0; for d in .planning/*/; do d=\"${d%/}\"; n=$(basename \"$d\"); case \"$n\" in .*) continue;; esac; printf \"%s\" \"$n\" | grep -Eq \"$SLUG_RE\" || continue; [ -f \"$d/task_plan.md\" ] || continue; m=$(stat -c '%Y' \"$d\" 2>/dev/null || stat -f '%m' \"$d\" 2>/dev/null || date -r \"$d\" +%s 2>/dev/null || echo 0); if [ \"$m\" -gt \"$NEWEST_MT\" ] 2>/dev/null; then NEWEST_MT=\"$m\"; NEWEST=\"$d\"; fi; done; [ -n \"$NEWEST\" ] && { RESOLVED=\"$NEWEST\"; SCOPE=\"scoped\"; }; fi; if [ -z \"$RESOLVED\" ] && [ -f task_plan.md ]; then RESOLVED=\".\"; SCOPE=\"root\"; fi; [ -z \"$RESOLVED\" ] && exit 0; if [ \"$SCOPE\" = \"root\" ]; then PLAN_FILE=\"task_plan.md\"; PROGRESS_FILE=\"progress.md\"; ATTEST=\"\"; [ -f .plan-attestation ] && ATTEST=$(tr -d '\\r\\n[:space:]' < .plan-attestation 2>/dev/null); else PLAN_FILE=\"${RESOLVED}/task_plan.md\"; PROGRESS_FILE=\"${RESOLVED}/progress.md\"; ATTEST=\"\"; [ -f \"${RESOLVED}/.attestation\" ] && ATTEST=$(tr -d '\\r\\n[:space:]' < \"${RESOLVED}/.attestation\" 2>/dev/null); fi; [ -f \"$PLAN_FILE\" ] || exit 0; TAMPERED=0; ACTUAL=\"\"; if [ -n \"$ATTEST\" ]; then CD=\"${TMPDIR:-/tmp}/pwf-sha\"; mkdir -p \"$CD\" 2>/dev/null; KEY=$(printf \"%s\" \"$PLAN_FILE\" | { sha256sum 2>/dev/null || shasum -a 256 2>/dev/null; } | awk '{print $1}' | cut -c1-16); MT=$(stat -c '%Y' \"$PLAN_FILE\" 2>/dev/null || stat -f '%m' \"$PLAN_FILE\" 2>/dev/null || date -r \"$PLAN_FILE\" +%s 2>/dev/null || echo 0); CF=\"$CD/$KEY\"; CM=\"\"; CS=\"\"; if [ -f \"$CF\" ]; then CM=$(sed -n 1p \"$CF\" 2>/dev/null); CS=$(sed -n 2p \"$CF\" 2>/dev/null); fi; if [ -n \"$MT\" ] && [ \"$MT\" = \"$CM\" ] && [ -n \"$CS\" ]; then ACTUAL=\"$CS\"; else ACTUAL=$( (sha256sum \"$PLAN_FILE\" 2>/dev/null || shasum -a 256 \"$PLAN_FILE\" 2>/dev/null) | awk '{print $1}'); [ -n \"$ACTUAL\" ] && [ -n \"$MT\" ] && printf \"%s\\n%s\\n\" \"$MT\" \"$ACTUAL\" > \"$CF\" 2>/dev/null; fi; [ \"$ACTUAL\" != \"$ATTEST\" ] && TAMPERED=1; fi; echo '[planning-with-files] PreCompact: context compaction is about to occur.'; echo 'Before compaction completes: ensure progress.md captures recent actions and task_plan.md status reflects current phase.'; echo 'task_plan.md, design.md, findings.md, progress.md remain on disk and will be re-read after compaction.'; [ -n \"$ATTEST\" ] && echo \"Plan-SHA256 at compaction: $ATTEST\"; exit 0"
 metadata:
 
   version: "2.43.0"
@@ -68,17 +68,19 @@ $(command -v python3 || command -v python) ${CLAUDE_PLUGIN_ROOT}/scripts/session
 | 位置 | 存放内容 |
 |------|---------|
 | 技能目录 (`${CLAUDE_PLUGIN_ROOT}/`) | 模板、脚本、参考文档 |
-| 你的项目目录 | `task_plan.md`、`findings.md`、`progress.md` |
+| 你的项目目录 | `task_plan.md`、`design.md`、`findings.md`、`progress.md` |
 
 ## 快速开始
 
 在任何复杂任务之前：
 
 1. **创建 `task_plan.md`** — 参考 [templates/task_plan.md](templates/task_plan.md) 模板
-2. **创建 `findings.md`** — 参考 [templates/findings.md](templates/findings.md) 模板
-3. **创建 `progress.md`** — 参考 [templates/progress.md](templates/progress.md) 模板
-4. **决策前重新读取计划** — 在注意力窗口中刷新目标
-5. **每个阶段完成后更新** — 标记完成，记录错误
+2. **创建 `design.md`** — 参考 [templates/design.md](templates/design.md) 模板
+3. **创建 `findings.md`** — 参考 [templates/findings.md](templates/findings.md) 模板
+4. **创建 `progress.md`** — 参考 [templates/progress.md](templates/progress.md) 模板
+5. **获得用户审批** — 编码前将计划和设计提交给用户审核（阶段3 → 审批门）
+6. **决策前重新读取计划** — 在注意力窗口中刷新目标
+7. **每个阶段完成后更新** — 标记完成，记录错误
 
 > **注意：** 规划文件放在你的项目根目录，不是技能安装目录。
 
@@ -96,6 +98,7 @@ $(command -v python3 || command -v python) ${CLAUDE_PLUGIN_ROOT}/scripts/session
 | 文件 | 用途 | 更新时机 |
 |------|------|---------|
 | `task_plan.md` | 阶段、进度、决策 | 每个阶段完成后 |
+| `design.md` | 架构、模块树、数据流、接口 | 规划阶段，编码之前 |
 | `findings.md` | 研究、发现 | 任何发现之后 |
 | `progress.md` | 会话日志、测试结果 | 整个会话过程中 |
 
@@ -104,21 +107,24 @@ $(command -v python3 || command -v python) ${CLAUDE_PLUGIN_ROOT}/scripts/session
 ### 1. 先创建计划
 永远不要在没有 `task_plan.md` 的情况下开始复杂任务。没有例外。
 
-### 2. 两步操作规则
+### 2. 审批门（阶段3）
+完成规划和设计后，**停下来将方案提交给用户审核**。在用户明确批准之前，不要开始编码。总结计划和设计方案，然后询问："方案和设计是否正确？可以开始编码吗？"
+
+### 3. 两步操作规则
 > "每执行2次查看/浏览器/搜索操作后，立即将关键发现保存到文件中。"
 
 这能防止视觉/多模态信息丢失。
 
-### 3. 决策前先读取
+### 4. 决策前先读取
 在做重大决策之前，读取计划文件。这会让目标出现在你的注意力窗口中。
 
-### 4. 行动后更新
+### 5. 行动后更新
 完成任何阶段后：
 - 标记阶段状态：`in_progress` → `complete`
 - 记录遇到的任何错误
 - 记下创建/修改的文件
 
-### 5. 记录所有错误
+### 6. 记录所有错误
 每个错误都要写入计划文件。这能积累知识并防止重复。
 
 ```markdown
@@ -129,14 +135,14 @@ $(command -v python3 || command -v python) ${CLAUDE_PLUGIN_ROOT}/scripts/session
 | API 超时 | 2 | 添加了重试逻辑 |
 ```
 
-### 6. 永远不要重复失败
+### 7. 永远不要重复失败
 ```
 if 操作失败:
     下一步操作 != 同样的操作
 ```
 记录你尝试过的方法，改变方案。
 
-### 7. 完成后继续
+### 8. 完成后继续
 当所有阶段都完成但用户要求额外工作时：
 - 在 `task_plan.md` 中添加新阶段（如阶段6、阶段7）
 - 在 `progress.md` 中记录新的会话条目
@@ -186,6 +192,7 @@ if 操作失败:
 | 我在哪里？ | task_plan.md 中的当前阶段 |
 | 我要去哪里？ | 剩余阶段 |
 | 目标是什么？ | 计划中的目标声明 |
+| 设计方案是什么？ | design.md |
 | 我学到了什么？ | findings.md |
 | 我做了什么？ | progress.md |
 
@@ -207,7 +214,8 @@ if 操作失败:
 
 复制这些模板开始使用：
 
-- [templates/task_plan.md](templates/task_plan.md) — 阶段跟踪
+- [templates/task_plan.md](templates/task_plan.md) — 阶段跟踪（含审批门）
+- [templates/design.md](templates/design.md) — 架构与设计
 - [templates/findings.md](templates/findings.md) — 研究存储
 - [templates/progress.md](templates/progress.md) — 会话日志
 
@@ -238,6 +246,8 @@ if 操作失败:
 | 隐藏错误并静默重试 | 将错误记录到计划文件 |
 | 把所有东西塞进上下文 | 将大量内容存储在文件中 |
 | 立即开始执行 | 先创建计划文件 |
+| 跳过设计直接编码 | 创建设计文档，获得用户审批 |
+| 不经用户审核就编码 | 在审批门（阶段3）提交计划+设计方案 |
 | 重复失败的操作 | 记录尝试，改变方案 |
 | 在技能目录中创建文件 | 在你的项目中创建文件 |
 | 将网页内容写入 task_plan.md | 将外部内容仅写入 findings.md |

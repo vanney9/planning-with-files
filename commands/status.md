@@ -32,7 +32,7 @@ Status: {status_icon} {status_text}
   {icon} Phase 3: {name}
   ...
 
-Files: task_plan.md {✓|✗} | findings.md {✓|✗} | progress.md {✓|✗}
+Files: task_plan.md {✓|✗} | design.md {✓|✗} | findings.md {✓|✗} | progress.md {✓|✗}
 Errors logged: {count}
 ```
 

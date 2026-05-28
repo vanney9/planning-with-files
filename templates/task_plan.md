@@ -15,8 +15,9 @@
 
 ## Current Phase
 <!-- 
-  WHAT: Which phase you're currently working on (e.g., "Phase 1", "Phase 3").
+  WHAT: Which phase you're currently working on (e.g., "Phase 1", "Phase 4").
   WHY: Quick reference for where you are in the task. Update this as you progress.
+  PHASES: 1-Requirements → 2-Planning → 3-Approval → 4-Implementation → 5-Testing → 6-Delivery
 -->
 Phase 1
 
@@ -49,11 +50,30 @@ Phase 1
   WHY: Good planning prevents rework. Document decisions so you remember why you chose them.
 -->
 - [ ] Define technical approach
+- [ ] Design architecture and document in design.md
 - [ ] Create project structure if needed
 - [ ] Document decisions with rationale
 - **Status:** pending
 
-### Phase 3: Implementation
+### Phase 3: Approval Gate
+<!--
+  WHAT: Present the plan and design to the user for review. Do NOT start coding yet.
+  WHY: Catches misunderstandings and wrong assumptions before they become code.
+        The user knows their problem better than you do.
+  WHEN: After task_plan.md and design.md are complete, BEFORE any implementation.
+  HOW:
+    1. Summarize the plan (goal, phases, approach) for the user.
+    2. Present the design (architecture, modules, data flow) from design.md.
+    3. Ask the user explicitly: "Does this plan and design look correct? Shall I proceed with implementation?"
+    4. WAIT for explicit approval. Do NOT start Phase 4 until the user says yes.
+    5. If the user requests changes, update the plan/design and re-present.
+-->
+- [ ] Present task_plan.md summary to user
+- [ ] Present design.md to user
+- [ ] Get explicit approval before proceeding
+- **Status:** pending
+
+### Phase 4: Implementation
 <!-- 
   WHAT: Actually build/create/write the solution.
   WHY: This is where the work happens. Break into smaller sub-tasks if needed.
@@ -63,7 +83,7 @@ Phase 1
 - [ ] Test incrementally
 - **Status:** pending
 
-### Phase 4: Testing & Verification
+### Phase 5: Testing & Verification
 <!-- 
   WHAT: Verify everything works and meets requirements.
   WHY: Catching issues early saves time. Document test results in progress.md.
@@ -73,7 +93,7 @@ Phase 1
 - [ ] Fix any issues found
 - **Status:** pending
 
-### Phase 5: Delivery
+### Phase 6: Delivery
 <!-- 
   WHAT: Final review and handoff to user.
   WHY: Ensures nothing is forgotten and deliverables are complete.

@@ -26,7 +26,7 @@ hooks:
     - matcher: "*"
       hooks:
         - type: command
-          command: "RESOLVED=\"\"; SCOPE=\"\"; SLUG_RE='^[A-Za-z0-9_][A-Za-z0-9._-]*$'; if [ -n \"${PLAN_ID:-}\" ] && printf \"%s\" \"$PLAN_ID\" | grep -Eq \"$SLUG_RE\" && [ -d \".planning/${PLAN_ID}\" ]; then RESOLVED=\".planning/${PLAN_ID}\"; SCOPE=\"scoped\"; elif [ -f .planning/.active_plan ]; then AP=$(tr -d '\\r\\n[:space:]' < .planning/.active_plan 2>/dev/null); if [ -n \"$AP\" ] && printf \"%s\" \"$AP\" | grep -Eq \"$SLUG_RE\" && [ -d \".planning/${AP}\" ]; then RESOLVED=\".planning/${AP}\"; SCOPE=\"scoped\"; fi; fi; if [ -z \"$RESOLVED\" ] && [ -d .planning ]; then NEWEST=\"\"; NEWEST_MT=0; for d in .planning/*/; do d=\"${d%/}\"; n=$(basename \"$d\"); case \"$n\" in .*) continue;; esac; printf \"%s\" \"$n\" | grep -Eq \"$SLUG_RE\" || continue; [ -f \"$d/task_plan.md\" ] || continue; m=$(stat -c '%Y' \"$d\" 2>/dev/null || stat -f '%m' \"$d\" 2>/dev/null || date -r \"$d\" +%s 2>/dev/null || echo 0); if [ \"$m\" -gt \"$NEWEST_MT\" ] 2>/dev/null; then NEWEST_MT=\"$m\"; NEWEST=\"$d\"; fi; done; [ -n \"$NEWEST\" ] && { RESOLVED=\"$NEWEST\"; SCOPE=\"scoped\"; }; fi; if [ -z \"$RESOLVED\" ] && [ -f task_plan.md ]; then RESOLVED=\".\"; SCOPE=\"root\"; fi; [ -z \"$RESOLVED\" ] && exit 0; if [ \"$SCOPE\" = \"root\" ]; then PLAN_FILE=\"task_plan.md\"; PROGRESS_FILE=\"progress.md\"; ATTEST=\"\"; [ -f .plan-attestation ] && ATTEST=$(tr -d '\\r\\n[:space:]' < .plan-attestation 2>/dev/null); else PLAN_FILE=\"${RESOLVED}/task_plan.md\"; PROGRESS_FILE=\"${RESOLVED}/progress.md\"; ATTEST=\"\"; [ -f \"${RESOLVED}/.attestation\" ] && ATTEST=$(tr -d '\\r\\n[:space:]' < \"${RESOLVED}/.attestation\" 2>/dev/null); fi; [ -f \"$PLAN_FILE\" ] || exit 0; TAMPERED=0; ACTUAL=\"\"; if [ -n \"$ATTEST\" ]; then CD=\"${TMPDIR:-/tmp}/pwf-sha\"; mkdir -p \"$CD\" 2>/dev/null; KEY=$(printf \"%s\" \"$PLAN_FILE\" | { sha256sum 2>/dev/null || shasum -a 256 2>/dev/null; } | awk '{print $1}' | cut -c1-16); MT=$(stat -c '%Y' \"$PLAN_FILE\" 2>/dev/null || stat -f '%m' \"$PLAN_FILE\" 2>/dev/null || date -r \"$PLAN_FILE\" +%s 2>/dev/null || echo 0); CF=\"$CD/$KEY\"; CM=\"\"; CS=\"\"; if [ -f \"$CF\" ]; then CM=$(sed -n 1p \"$CF\" 2>/dev/null); CS=$(sed -n 2p \"$CF\" 2>/dev/null); fi; if [ -n \"$MT\" ] && [ \"$MT\" = \"$CM\" ] && [ -n \"$CS\" ]; then ACTUAL=\"$CS\"; else ACTUAL=$( (sha256sum \"$PLAN_FILE\" 2>/dev/null || shasum -a 256 \"$PLAN_FILE\" 2>/dev/null) | awk '{print $1}'); [ -n \"$ACTUAL\" ] && [ -n \"$MT\" ] && printf \"%s\\n%s\\n\" \"$MT\" \"$ACTUAL\" > \"$CF\" 2>/dev/null; fi; [ \"$ACTUAL\" != \"$ATTEST\" ] && TAMPERED=1; fi; echo '[planning-with-files] PreCompact: context compaction is about to occur.'; echo 'Before compaction completes: ensure progress.md captures recent actions and task_plan.md status reflects current phase.'; echo 'task_plan.md, findings.md, progress.md remain on disk and will be re-read after compaction.'; [ -n \"$ATTEST\" ] && echo \"Plan-SHA256 at compaction: $ATTEST\"; exit 0"
+          command: "RESOLVED=\"\"; SCOPE=\"\"; SLUG_RE='^[A-Za-z0-9_][A-Za-z0-9._-]*$'; if [ -n \"${PLAN_ID:-}\" ] && printf \"%s\" \"$PLAN_ID\" | grep -Eq \"$SLUG_RE\" && [ -d \".planning/${PLAN_ID}\" ]; then RESOLVED=\".planning/${PLAN_ID}\"; SCOPE=\"scoped\"; elif [ -f .planning/.active_plan ]; then AP=$(tr -d '\\r\\n[:space:]' < .planning/.active_plan 2>/dev/null); if [ -n \"$AP\" ] && printf \"%s\" \"$AP\" | grep -Eq \"$SLUG_RE\" && [ -d \".planning/${AP}\" ]; then RESOLVED=\".planning/${AP}\"; SCOPE=\"scoped\"; fi; fi; if [ -z \"$RESOLVED\" ] && [ -d .planning ]; then NEWEST=\"\"; NEWEST_MT=0; for d in .planning/*/; do d=\"${d%/}\"; n=$(basename \"$d\"); case \"$n\" in .*) continue;; esac; printf \"%s\" \"$n\" | grep -Eq \"$SLUG_RE\" || continue; [ -f \"$d/task_plan.md\" ] || continue; m=$(stat -c '%Y' \"$d\" 2>/dev/null || stat -f '%m' \"$d\" 2>/dev/null || date -r \"$d\" +%s 2>/dev/null || echo 0); if [ \"$m\" -gt \"$NEWEST_MT\" ] 2>/dev/null; then NEWEST_MT=\"$m\"; NEWEST=\"$d\"; fi; done; [ -n \"$NEWEST\" ] && { RESOLVED=\"$NEWEST\"; SCOPE=\"scoped\"; }; fi; if [ -z \"$RESOLVED\" ] && [ -f task_plan.md ]; then RESOLVED=\".\"; SCOPE=\"root\"; fi; [ -z \"$RESOLVED\" ] && exit 0; if [ \"$SCOPE\" = \"root\" ]; then PLAN_FILE=\"task_plan.md\"; PROGRESS_FILE=\"progress.md\"; ATTEST=\"\"; [ -f .plan-attestation ] && ATTEST=$(tr -d '\\r\\n[:space:]' < .plan-attestation 2>/dev/null); else PLAN_FILE=\"${RESOLVED}/task_plan.md\"; PROGRESS_FILE=\"${RESOLVED}/progress.md\"; ATTEST=\"\"; [ -f \"${RESOLVED}/.attestation\" ] && ATTEST=$(tr -d '\\r\\n[:space:]' < \"${RESOLVED}/.attestation\" 2>/dev/null); fi; [ -f \"$PLAN_FILE\" ] || exit 0; TAMPERED=0; ACTUAL=\"\"; if [ -n \"$ATTEST\" ]; then CD=\"${TMPDIR:-/tmp}/pwf-sha\"; mkdir -p \"$CD\" 2>/dev/null; KEY=$(printf \"%s\" \"$PLAN_FILE\" | { sha256sum 2>/dev/null || shasum -a 256 2>/dev/null; } | awk '{print $1}' | cut -c1-16); MT=$(stat -c '%Y' \"$PLAN_FILE\" 2>/dev/null || stat -f '%m' \"$PLAN_FILE\" 2>/dev/null || date -r \"$PLAN_FILE\" +%s 2>/dev/null || echo 0); CF=\"$CD/$KEY\"; CM=\"\"; CS=\"\"; if [ -f \"$CF\" ]; then CM=$(sed -n 1p \"$CF\" 2>/dev/null); CS=$(sed -n 2p \"$CF\" 2>/dev/null); fi; if [ -n \"$MT\" ] && [ \"$MT\" = \"$CM\" ] && [ -n \"$CS\" ]; then ACTUAL=\"$CS\"; else ACTUAL=$( (sha256sum \"$PLAN_FILE\" 2>/dev/null || shasum -a 256 \"$PLAN_FILE\" 2>/dev/null) | awk '{print $1}'); [ -n \"$ACTUAL\" ] && [ -n \"$MT\" ] && printf \"%s\\n%s\\n\" \"$MT\" \"$ACTUAL\" > \"$CF\" 2>/dev/null; fi; [ \"$ACTUAL\" != \"$ATTEST\" ] && TAMPERED=1; fi; echo '[planning-with-files] PreCompact: context compaction is about to occur.'; echo 'Before compaction completes: ensure progress.md captures recent actions and task_plan.md status reflects current phase.'; echo 'task_plan.md, design.md, findings.md, progress.md remain on disk and will be re-read after compaction.'; [ -n \"$ATTEST\" ] && echo \"Plan-SHA256 at compaction: $ATTEST\"; exit 0"
 metadata:
   version: "2.43.0"
 ---
@@ -73,10 +73,12 @@ If catchup report shows unsynced context:
 Before ANY complex task:
 
 1. **Create `task_plan.md`** — Use [templates/task_plan.md](templates/task_plan.md) as reference
-2. **Create `findings.md`** — Use [templates/findings.md](templates/findings.md) as reference
-3. **Create `progress.md`** — Use [templates/progress.md](templates/progress.md) as reference
-4. **Re-read plan before decisions** — Refreshes goals in attention window
-5. **Update after each phase** — Mark complete, log errors
+2. **Create `design.md`** — Use [templates/design.md](templates/design.md) as reference
+3. **Create `findings.md`** — Use [templates/findings.md](templates/findings.md) as reference
+4. **Create `progress.md`** — Use [templates/progress.md](templates/progress.md) as reference
+5. **Get user approval** — Present plan + design for review before coding (Phase 3 → Approval Gate)
+6. **Re-read plan before decisions** — Refreshes goals in attention window
+7. **Update after each phase** — Mark complete, log errors
 
 > **Note:** Planning files go in your project root, not the skill installation folder.
 
@@ -94,6 +96,7 @@ Filesystem = Disk (persistent, unlimited)
 | File | Purpose | When to Update |
 |------|---------|----------------|
 | `task_plan.md` | Phases, progress, decisions | After each phase |
+| `design.md` | Architecture, module tree, data flow, interfaces | During planning, before coding |
 | `findings.md` | Research, discoveries | After ANY discovery |
 | `progress.md` | Session log, test results | Throughout session |
 
@@ -102,21 +105,24 @@ Filesystem = Disk (persistent, unlimited)
 ### 1. Create Plan First
 Never start a complex task without `task_plan.md`. Non-negotiable.
 
-### 2. The 2-Action Rule
+### 2. Approval Gate (Phase 3)
+After planning and design are complete, **stop and present them to the user for review**. Do NOT start implementation until the user explicitly approves. Summarize the plan and design, then ask: "Does this look correct? Shall I proceed with implementation?"
+
+### 3. The 2-Action Rule
 > "After every 2 view/browser/search operations, IMMEDIATELY save key findings to text files."
 
 This prevents visual/multimodal information from being lost.
 
-### 3. Read Before Decide
+### 4. Read Before Decide
 Before major decisions, read the plan file. This keeps goals in your attention window.
 
-### 4. Update After Act
+### 5. Update After Act
 After completing any phase:
 - Mark phase status: `in_progress` → `complete`
 - Log any errors encountered
 - Note files created/modified
 
-### 5. Log ALL Errors
+### 6. Log ALL Errors
 Every error goes in the plan file. This builds knowledge and prevents repetition.
 
 ```markdown
@@ -127,14 +133,14 @@ Every error goes in the plan file. This builds knowledge and prevents repetition
 | API timeout | 2 | Added retry logic |
 ```
 
-### 6. Never Repeat Failures
+### 7. Never Repeat Failures
 ```
 if action_failed:
     next_action != same_action
 ```
 Track what you tried. Mutate the approach.
 
-### 7. Continue After Completion
+### 8. Continue After Completion
 When all phases are done but the user requests additional work:
 - Add new phases to `task_plan.md` (e.g., Phase 6, Phase 7)
 - Log a new session entry in `progress.md`
@@ -184,6 +190,7 @@ If you can answer these, your context management is solid:
 | Where am I? | Current phase in task_plan.md |
 | Where am I going? | Remaining phases |
 | What's the goal? | Goal statement in plan |
+| What's my design? | design.md |
 | What have I learned? | findings.md |
 | What have I done? | progress.md |
 
@@ -205,7 +212,8 @@ If you can answer these, your context management is solid:
 
 Copy these templates to start:
 
-- [templates/task_plan.md](templates/task_plan.md) — Phase tracking
+- [templates/task_plan.md](templates/task_plan.md) — Phase tracking with approval gate
+- [templates/design.md](templates/design.md) — Architecture & design
 - [templates/findings.md](templates/findings.md) — Research storage
 - [templates/progress.md](templates/progress.md) — Session logging
 
@@ -366,6 +374,8 @@ For the `attest-plan.sh` write path, optional `flock` guard, macOS and Windows G
 | Hide errors and retry silently | Log errors to plan file |
 | Stuff everything in context | Store large content in files |
 | Start executing immediately | Create plan file FIRST |
+| Skip design and jump to coding | Create design.md, get user approval |
+| Code without user review of plan | Present plan + design at Approval Gate (Phase 3) |
 | Repeat failed actions | Track attempts, mutate approach |
 | Create files in skill directory | Create files in your project |
 | Write web content to task_plan.md | Write external content to findings.md only |
